@@ -83,29 +83,11 @@ vector<pair<int, int>> aStar(vector<vector<int>>& grid, pair<int, int> start, pa
     return {};
 }
 
-int main() {
-    // 0은 통로, 1은 장애물을 의미
-    vector<vector<int>> grid = {
-        {0, 1, 0, 0, 0},
-        {0, 1, 0, 1, 0},
-        {0, 0, 0, 1, 0},
-        {0, 0, 1, 1, 0},
-        {1, 0, 0, 0, 0}
-    };
+void printGridWithPath(vector<vector<int>>& grid, vector<pair<int, int>>& path) {
+    vector<vector<char>> displayGrid(grid.size(), vector<char>(grid[0].size(), ' '));
 
-    pair<int, int> start = {0, 0};  // 시작 위치
-    pair<int, int> goal = {4, 4};  // 목표 위치
-
-    vector<pair<int, int>> path = aStar(grid, start, goal);
-
-    if (!path.empty()) {
-        cout << "Path found:\n";
-        for (auto& p : path) {
-            cout << "(" << p.first << ", " << p.second << ") ";
-        }
-    } else {
-        cout << "No path found!";
-    }
-
-    return 0;
-}
+    for (int i = 0; i < grid.size(); ++i) {
+        for (int j = 0; j < grid[0].size(); ++j) {
+            if (grid[i][j] == 1) {
+                displayGrid[i][j] = 'of';  // 장애물
+                
