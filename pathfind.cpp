@@ -4,6 +4,9 @@
 #include <cmath>
 #include <algorithm>
 #include <unordered_map>
+#include <cstdlib>
+#include <ctime>
+#include <thread>
 
 using namespace std;
 
@@ -83,11 +86,111 @@ vector<pair<int, int>> aStar(vector<vector<int>>& grid, pair<int, int> start, pa
     return {};
 }
 
-void printGridWithPath(vector<vector<int>>& grid, vector<pair<int, int>>& path) {
-    vector<vector<char>> displayGrid(grid.size(), vector<char>(grid[0].size(), ' '));
+vector<vector<int>> generateRandomGrid(int rows, int cols) {
+    vector<vector<int>> grid(rows, vector<int>(cols));
+    srand(time(0));  // 시드 설정
 
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            grid[i][j] = rand() % 2;  // 0 또는 1 랜덤 생성
+        }
+    }
+
+    // 시작 위치와 목표 위치는 무조건 0으로 설정
+    grid[0][0] = 0;
+    grid[rows - 1][cols - 1] = 0;
+
+    return grid;
+}
+
+void printGrid(const vector<vector<int>>& grid) {
+    for (const auto& row : grid) {
+        for (int cell : row) {
+            if (cell == 1) {
+                cout << "\u25A0 ";  // 장애물 (색칠된 사각형 기호)
+            } else {
+                cout << "  ";  // 통로 (공백)
+            }
+        }
+        cout << endl;
+    }
+}
+
+void printGridWithPath(vector<vector<int>>& grid, vector<pair<int, int>>& path) {
     for (int i = 0; i < grid.size(); ++i) {
         for (int j = 0; j < grid[0].size(); ++j) {
             if (grid[i][j] == 1) {
-                displayGrid[i][j] = 'of';  // 장애물
-                
+                cout << "\u25A0 ";  // 장애물 (색칠된 사각형 기호)
+            } else {
+                bool isPath = false;
+                for (auto& p : path) {
+                    if (p.first == i && p.second == j) {
+                        cout << "* ";  // 경로
+                        isPath = true;
+                        break;
+                    }
+                }
+                if (!isPath) {
+                    cout << "  ";  // 통로 (공백)
+                }
+            }
+        }
+        cout << endl;
+    }
+}
+
+int main(){
+    int countall = 0, countpass = 0, countfail = 0;
+    while(1){
+    // 0은 통로, 1은 장애물을 의미
+    vector<vector<int>> grid = generateRandomGrid(20, 20);
+    //countall++;
+     /*grid = {
+        {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1},
+        {1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1},
+        {0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1},
+        {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1},
+        {0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
+        {0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1},
+        {0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1},
+        {0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1},
+        {0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1},
+        {0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1},
+        {0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1},
+        {1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1},
+        {0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1},
+        {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1},
+        {0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1},
+        {0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1},
+        {0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1},
+        {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1},
+        {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1},
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0}
+    };*/
+
+    pair<int, int> start = {0, 0};  // 시작 위치
+    pair<int, int> goal = {19, 19};  // 목표 위치
+
+    vector<pair<int, int>> path = aStar(grid, start, goal);
+
+    if (!path.empty()) {
+        cout << "" << endl;
+        printGridWithPath(grid, path);
+        cout << "\nPath found:\n";
+        cout << "------------------------------------------------------------" << endl;
+        countpass++;
+    } else {
+        cout << "" << endl;
+        printGrid(grid);
+        cout << "\nNo path found!\n";
+        cout << "------------------------------------------------------------" << endl;
+        countfail++;
+    }
+
+    countall = countpass + countfail;
+    cout << countall << "/" << countpass << "/" << countfail << endl;
+
+    this_thread::sleep_for(chrono::milliseconds(100));
+    //return 0;
+    }
+}
